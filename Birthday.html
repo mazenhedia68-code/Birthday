@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>كل سنة وأنتِ طيبة يا سارة 💖🎂</title>
+  <!-- Google Fonts: Cairo & Amiri & Tajawal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,700;1,700&family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti Library for Celebratory Fireworks -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            tajawal: ['Tajawal', 'sans-serif'],
+            amiri: ['Amiri', 'serif'],
+          },
+          colors: {
+            roseGold: '#e0a96d',
+            softPink: '#ffe5ec',
+            vibrantPink: '#ff2a85',
+            winePink: '#4a0e2e',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #2b081e 0%, #15030f 50%, #080106 100%);
+      overflow-x: hidden;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    /* Floating Canvas Layer */
+    #heartsCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Glassmorphism Card Style */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 12px 40px 0 rgba(255, 42, 133, 0.18);
+    }
+
+    /* Glowing Text Animations */
+    .glow-text-gold {
+      color: #ffe6a7;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 25px rgba(255, 180, 0, 0.4);
+    }
+    .glow-text-pink {
+      color: #ff9ebb;
+      text-shadow: 0 0 12px rgba(255, 42, 133, 0.7), 0 0 30px rgba(255, 42, 133, 0.4);
+    }
+
+    /* Pulsing & Floating Animations */
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .animate-gentle-pulse {
+      animation: gentlePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes flameFlicker {
+      0%, 100% { transform: scale(1) rotate(-1deg); opacity: 0.95; }
+      25% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+      50% { transform: scale(0.9) rotate(-2deg); opacity: 0.85; }
+      75% { transform: scale(1.1) rotate(1deg); opacity: 1; }
+    }
+    .flickering-flame {
+      animation: flameFlicker 0.4s infinite alternate;
+      transform-origin: bottom center;
+    }
+
+    /* Audio wave animation */
+    .sound-bar {
+      transition: height 0.15s ease;
+    }
+
+    /* Click heart burst */
+    .click-heart {
+      position: fixed;
+      pointer-events: none;
+      animation: floatUpAndFade 1.2s forwards ease-out;
+      z-index: 9999;
+      font-size: 24px;
+    }
+
+    @keyframes floatUpAndFade {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+      }
+      50% {
+        transform: translate(-50%, -100px) scale(1.4) rotate(15deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -180px) scale(1.8) rotate(-20deg);
+      }
+    }
+  </style>
+</head>
+<body class="relative flex flex-col justify-between items-center selection:bg-pink-500 selection:text-white">
+
+  <!-- Interactive canvas for floating heart particles -->
+  <canvas id="heartsCanvas"></canvas>
+
+  <header class="w-full max-w-4xl px-4 py-4 z-20 flex justify-between items-center">
+    <!-- Music Player Toggle -->
+    <button id="musicToggleBtn" class="flex items-center gap-2.5 px-4 py-2 rounded-full glass-card hover:bg-white/20 transition-all active:scale-95 shadow-lg border border-pink-400/40">
+      <span id="musicIcon" class="text-xl">🎵</span>
+      <span id="musicStatusText" class="text-xs sm:text-sm font-tajawal text-pink-200">تشغيل الموسيقى</span>
+      <div id="audioWave" class="flex items-end gap-1 h-4 w-5 hidden">
+        <span class="w-1 bg-pink-400 rounded-full h-2 sound-bar"></span>
+        <span class="w-1 bg-pink-300 rounded-full h-4 sound-bar"></span>
+        <span class="w-1 bg-pink-500 rounded-full h-1 sound-bar"></span>
+      </div>
+    </button>
+
+    <!-- Wish Badge -->
+    <div class="px-3 py-1.5 rounded-full bg-pink-950/60 border border-pink-500/30 text-xs text-pink-200 font-tajawal flex items-center gap-1.5 shadow-sm">
+      <span class="animate-spin text-sm">✨</span>
+      <span>يوم مميز لأغلى سارة</span>
+    </div>
+  </header>
+
+  <main class="w-full max-w-2xl px-4 flex flex-col items-center text-center z-10 my-4 space-y-6">
+    
+    <!-- Hero Title Box -->
+    <div class="space-y-3">
+      <div class="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 border border-pink-400/30 text-pink-300 text-sm md:text-base font-semibold tracking-wider animate-gentle-pulse">
+        🌸 عيد ميلاد سعيد 🌸
+      </div>
+
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black font-cairo glow-text-pink leading-tight">
+        كل سنة وأنتِ طيبة يا سارة
+        <span class="inline-block animate-bounce text-3xl sm:text-5xl">🎉💖</span>
+      </h1>
+
+      <p class="text-lg sm:text-2xl font-bold font-tajawal glow-text-gold mt-2 leading-relaxed">
+        عقبال مليون ألف سنة يا أحلى سارة في الدنيا ✨🎂
+      </p>
+
+      <p class="text-xs sm:text-sm text-pink-200/80 max-w-md mx-auto pt-1 font-light leading-relaxed">
+        اليوم تبتسم الدنيا وتزدهر بأجمل مناسبة.. يوم ميلادكِ يا وردة الأيام وسكر العمر!
+      </p>
+    </div>
+
+    <div class="glass-card rounded-3xl p-6 w-full max-w-sm border border-pink-400/30 relative flex flex-col items-center">
+      <div class="text-xs font-semibold text-pink-300 uppercase tracking-widest mb-3">
+        🎂 كعكة الأمنيات لسارة
+      </div>
+
+      <!-- Interactive SVG Birthday Cake -->
+      <div id="cakeContainer" class="cursor-pointer relative py-2 transition-transform hover:scale-105 active:scale-95 group" title="اضغطي هنا لإطفاء الشموع!">
+        <svg class="w-48 h-48 drop-shadow-[0_10px_20px_rgba(255,42,133,0.3)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Plate -->
+          <ellipse cx="100" cy="180" rx="90" ry="14" fill="#E2E8F0" opacity="0.4"/>
+          <ellipse cx="100" cy="177" rx="80" ry="10" fill="#CBD5E1" opacity="0.8"/>
+          
+          <!-- Bottom Cake Layer -->
+          <path d="M30 135 C30 125, 170 125, 170 135 L170 165 C170 178, 30 178, 30 165 Z" fill="#F472B6"/>
+          <path d="M30 135 C30 148, 170 148, 170 135 L170 142 C170 155, 30 155, 30 142 Z" fill="#EC4899"/>
+          
+          <!-- Middle Cream Frosting -->
+          <path d="M30 135 C40 145, 50 140, 60 135 C70 145, 80 140, 90 135 C100 145, 110 140, 120 135 C130 145, 140 140, 150 135 C160 145, 170 140, 170 135" stroke="#FFF" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- Top Layer -->
+          <path d="M48 95 C48 88, 152 88, 152 95 L152 130 C152 140, 48 140, 48 130 Z" fill="#FBCFE8"/>
+          <!-- Top Frosting Drips -->
+          <path d="M48 100 C55 110, 65 112, 75 100 C85 112, 95 112, 105 100 C115 112, 125 112, 135 100 C145 110, 152 105, 152 100" fill="#FFF" opacity="0.9"/>
+          
+          <!-- Decorative Pearls/Strawberries -->
+          <circle cx="70" cy="98" r="4" fill="#E11D48"/>
+          <circle cx="100" cy="99" r="4.5" fill="#E11D48"/>
+          <circle cx="130" cy="98" r="4" fill="#E11D48"/>
+
+          <!-- Candle 1 -->
+          <rect x="73" y="60" width="6" height="32" rx="3" fill="#6EE7B7"/>
+          <path d="M74 65 L78 68 M74 74 L78 77" stroke="#047857" stroke-width="1.5"/>
+          
+          <!-- Candle 2 (Center) -->
+          <rect x="97" y="52" width="7" height="40" rx="3" fill="#FDE047"/>
+          <path d="M98 58 L103 62 M98 68 L103 72" stroke="#CA8A04" stroke-width="1.5"/>
+
+          <!-- Candle 3 -->
+          <rect x="121" y="60" width="6" height="32" rx="3" fill="#93C5FD"/>
+          <path d="M122 65 L126 68 M122 74 L126 77" stroke="#1D4ED8" stroke-width="1.5"/>
+
+          <!-- Flames (Toggleable) -->
+          <g id="cakeFlames" class="flickering-flame">
+            <!-- Flame 1 -->
+            <path d="M76 60 C73 53, 70 48, 76 40 C82 48, 79 53, 76 60 Z" fill="url(#flameGradient)"/>
+            <circle cx="76" cy="54" r="2.5" fill="#FFFBEB"/>
+
+            <!-- Flame 2 (Center) -->
+            <path d="M100.5 52 C97 43, 94 36, 100.5 26 C107 36, 104 43, 100.5 52 Z" fill="url(#flameGradient)"/>
+            <circle cx="100.5" cy="45" r="3.2" fill="#FFFBEB"/>
+
+            <!-- Flame 3 -->
+            <path d="M124 60 C121 53, 118 48, 124 40 C130 48, 127 53, 124 60 Z" fill="url(#flameGradient)"/>
+            <circle cx="124" cy="54" r="2.5" fill="#FFFBEB"/>
+          </g>
+
+          <defs>
+            <linearGradient id="flameGradient" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#EA580C"/>
+              <stop offset="40%" stop-color="#F59E0B"/>
+              <stop offset="85%" stop-color="#FDE047"/>
+              <stop offset="100%" stop-color="#FFFFFF"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <button id="blowCandlesBtn" class="mt-2 px-5 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white font-bold rounded-full text-sm sm:text-base shadow-lg shadow-pink-500/30 transition-all flex items-center gap-2">
+        <span id="blowBtnIcon">💨</span>
+        <span id="blowBtnText">اطفئي الشموع وتمني أمنية!</span>
+      </button>
+
+      <p id="cakeStatusTip" class="text-pink-300/70 text-xs mt-2.5">
+        انقري على الكعكة أو الزر لإطفاء الشموع واحتفال خاص 🎂✨
+      </p>
+    </div>
+
+    <div class="w-full max-w-sm flex flex-col items-center">
+      <button id="openGiftBtn" class="w-full glass-card hover:border-pink-300 p-4 rounded-2xl flex items-center justify-between group transition-all duration-300 active:scale-95 border border-pink-400/30 shadow-lg">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl sm:text-4xl group-hover:rotate-12 transition-transform">🎁</span>
+          <div class="text-right">
+            <h2 class="text-sm sm:text-base font-bold text-white group-hover:text-pink-200">افتحي رسالة التهنئة الخاصة</h2>
+            <p class="text-xs text-pink-300/70">اضغطي هنا لقراءة ما كُتب لكِ بحب</p>
+          </div>
+        </div>
+        <span class="text-pink-300 group-hover:translate-x-[-4px] transition-transform text-lg">💌</span>
+      </button>
+    </div>
+
+  </main>
+
+  <div id="giftModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="modalCard" class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 border border-pink-300/40 text-center transform scale-90 transition-transform duration-300 relative shadow-2xl bg-gradient-to-b from-[#3a0a25] to-[#1a0410]">
+      
+      <!-- Close Button -->
+      <button id="closeModalBtn" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg active:scale-90 transition">
+        ✕
+      </button>
+
+      <!-- Envelope / Heart Icon -->
+      <div class="w-16 h-16 mx-auto mb-4 bg-pink-500/20 border border-pink-400/40 rounded-full flex items-center justify-center text-3xl">
+        💖
+      </div>
+
+      <h3 class="text-2xl font-bold font-cairo text-pink-200 mb-2">إلى الغالية سارة..</h3>
+      
+      <div class="space-y-3 text-sm sm:text-base text-pink-100/90 leading-relaxed font-tajawal text-justify sm:text-center px-1">
+        <p>
+          كل عام وضحكتكِ تملأ الكون سعادة وبهجة.
+          أنتِ لستِ فقط شخصاً مميزاً، بل أنتِ اللطف والجمال في حياة كل من يعرفكِ.
+        </p>
+        <p class="font-semibold text-roseGold">
+          عقبال مليون ألف سنة مليئة بالصحة والعافية، وتحقيق كل الأحلام التي ينتظرها قلبكِ الطيب يا أطيب سارة في العالم. 🌸🎈
+        </p>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-2">
+        <button id="celebrateMoreBtn" class="w-full py-3 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold rounded-full shadow-lg transition active:scale-95 text-sm sm:text-base">
+          إطلاق المزيد من الفرح والبهجة! 🎊🎉
+        </button>
+        <button id="closeModalBottomBtn" class="w-full py-2 bg-transparent hover:bg-white/5 text-pink-300/80 rounded-full text-xs">
+          إغلاق الرسالة
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full text-center py-4 z-10 text-xs text-pink-300/60 font-tajawal">
+    صُنع بكل حب ومودة للاحتفال بيوم ميلاد سارة 💖
+  </footer>
+
+  <script>
+    // --- 1. Sound Synthesis Engine (Web Audio API) ---
+    // Generates a melodic chime / music box Happy Birthday tune without external audio files
+    class BirthdaySynthesizer {
+      constructor() {
+        this.audioCtx = null;
+        this.isPlaying = false;
+        this.timer = null;
+        this.noteIndex = 0;
+
+        // "Happy Birthday to You" notes and durations (in quarter beats)
+        // Melody: C4 C4 D4 C4 F4 E4 | C4 C4 D4 C4 G4 F4 | C4 C4 C5 A4 F4 E4 D4 | Bb4 Bb4 A4 F4 G4 F4
+        this.melody = [
+          { note: 261.63, dur: 0.75 }, // C4
+          { note: 261.63, dur: 0.25 }, // C4
+          { note: 293.66, dur: 1.0 },  // D4
+          { note: 261.63, dur: 1.0 },  // C4
+          { note: 349.23, dur: 1.0 },  // F4
+          { note: 329.63, dur: 2.0 },  // E4
+
+          { note: 261.63, dur: 0.75 }, // C4
+          { note: 261.63, dur: 0.25 }, // C4
+          { note: 293.66, dur: 1.0 },  // D4
+          { note: 261.63, dur: 1.0 },  // C4
+          { note: 392.00, dur: 1.0 },  // G4
+          { note: 349.23, dur: 2.0 },  // F4
+
+          { note: 261.63, dur: 0.75 }, // C4
+          { note: 261.63, dur: 0.25 }, // C4
+          { note: 523.25, dur: 1.0 },  // C5
+          { note: 440.00, dur: 1.0 },  // A4
+          { note: 349.23, dur: 1.0 },  // F4
+          { note: 329.63, dur: 1.0 },  // E4
+          { note: 293.66, dur: 1.5 },  // D4
+
+          { note: 466.16, dur: 0.75 }, // Bb4
+          { note: 466.16, dur: 0.25 }, // Bb4
+          { note: 440.00, dur: 1.0 },  // A4
+          { note: 349.23, dur: 1.0 },  // F4
+          { note: 392.00, dur: 1.0 },  // G4
+          { note: 349.23, dur: 2.5 }   // F4
+        ];
+      }
+
+      init() {
+        if (!this.audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.audioCtx = new AudioContext();
+        }
+        if (this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
+        }
+      }
+
+      playTone(freq, durationSec) {
+        if (!this.audioCtx) return;
+        const now = this.audioCtx.currentTime;
+
+        // Create warm music-box chime using two oscillators (Sine + gentle Triangle harmonic)
+        const osc1 = this.audioCtx.createOscillator();
+        const osc2 = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(freq, now);
+
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(freq * 2, now); // 1 octave overtone chime
+
+        // Envelope: fast attack, smooth chime decay
+        gainNode.gain.setValueAtTime(0.001, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.25, now + 0.04);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
+
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + durationSec);
+        osc2.stop(now + durationSec);
+      }
+
+      playCheerTune() {
+        this.init();
+        // Play rapid arpeggio cheerful sound
+        const cheerNotes = [523.25, 659.25, 783.99, 1046.50];
+        cheerNotes.forEach((note, i) => {
+          setTimeout(() => {
+            this.playTone(note, 0.4);
+          }, i * 90);
+        });
+      }
+
+      start() {
+        this.init();
+        this.isPlaying = true;
+        this.noteIndex = 0;
+        this.scheduleNextNote();
+      }
+
+      stop() {
+        this.isPlaying = false;
+        if (this.timer) {
+          clearTimeout(this.timer);
+          this.timer = null;
+        }
+      }
+
+      scheduleNextNote() {
+        if (!this.isPlaying) return;
+
+        const current = this.melody[this.noteIndex];
+        const tempo = 420; // ms per beat
+        const durationSec = Math.max(0.2, (current.dur * tempo) / 1000 * 0.95);
+
+        this.playTone(current.note, durationSec);
+
+        const nextDelay = current.dur * tempo;
+        this.noteIndex = (this.noteIndex + 1) % this.melody.length;
+
+        this.timer = setTimeout(() => {
+          this.scheduleNextNote();
+        }, nextDelay);
+      }
+    }
+
+    const canvas = document.getElementById('heartsCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0;
+    let height = 0;
+    let hearts = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class FloatingHeart {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(initial = false) {
+        this.x = Math.random() * width;
+        this.y = initial ? Math.random() * height : height + 30;
+        this.size = Math.random() * 16 + 10;
+        this.speedY = Math.random() * 0.9 + 0.4;
+        this.speedX = Math.sin(Math.random() * Math.PI) * 0.5;
+        this.opacity = Math.random() * 0.6 + 0.25;
+        this.hue = Math.random() > 0.3 ? 340 + Math.random() * 30 : 45; // Pink or Golden sparkles
+        this.wobble = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = Math.random() * 0.03 + 0.01;
+      }
+
+      update() {
+        this.y -= this.speedY;
+        this.wobble += this.wobbleSpeed;
+        this.x += Math.sin(this.wobble) * 0.8;
+
+        if (this.y < -40 || this.x < -40 || this.x > width + 40) {
+          this.reset();
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.size / 20, this.size / 20);
+        ctx.fillStyle = `hsla(${this.hue}, 85%, 65%, ${this.opacity})`;
+        ctx.shadowColor = `hsla(${this.hue}, 90%, 60%, 0.8)`;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        // Classical Heart curve
+        ctx.moveTo(0, -5);
+        ctx.bezierCurveTo(-10, -18, -25, -2, 0, 20);
+        ctx.bezierCurveTo(25, -2, 10, -18, 0, -5);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Initialize 35 hearts for smooth mobile performance
+    const totalHearts = window.innerWidth < 640 ? 25 : 45;
+    for (let i = 0; i < totalHearts; i++) {
+      hearts.push(new FloatingHeart());
+    }
+
+    function animateHearts() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < hearts.length; i++) {
+        hearts[i].update();
+        hearts[i].draw();
+      }
+      requestAnimationFrame(animateHearts);
+    }
+    animateHearts();
+
+    const synth = new BirthdaySynthesizer();
+    const musicBtn = document.getElementById('musicToggleBtn');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicStatusText = document.getElementById('musicStatusText');
+    const audioWave = document.getElementById('audioWave');
+
+    let isMusicPlaying = false;
+
+    function toggleMusic() {
+      if (!isMusicPlaying) {
+        synth.start();
+        isMusicPlaying = true;
+        musicIcon.textContent = '⏸️';
+        musicStatusText.textContent = 'إيقاف النغم';
+        audioWave.classList.remove('hidden');
+      } else {
+        synth.stop();
+        isMusicPlaying = false;
+        musicIcon.textContent = '🎵';
+        musicStatusText.textContent = 'تشغيل الموسيقى';
+        audioWave.classList.add('hidden');
+      }
+    }
+
+    musicBtn.addEventListener('click', toggleMusic);
+
+    // Subtle audio wave bar height jitter
+    setInterval(() => {
+      if (isMusicPlaying) {
+        document.querySelectorAll('.sound-bar').forEach(bar => {
+          const randomH = Math.floor(Math.random() * 12 + 4);
+          bar.style.height = `${randomH}px`;
+        });
+      }
+    }, 150);
+
+    // Auto-start music on first user click anywhere (to respect browser autoplay policies)
+    let userHasInteracted = false;
+    window.addEventListener('click', () => {
+      if (!userHasInteracted) {
+        userHasInteracted = true;
+        if (!isMusicPlaying) {
+          toggleMusic();
+        }
+      }
+    }, { once: true });
+
+    const cakeContainer = document.getElementById('cakeContainer');
+    const cakeFlames = document.getElementById('cakeFlames');
+    const blowCandlesBtn = document.getElementById('blowCandlesBtn');
+    const blowBtnIcon = document.getElementById('blowBtnIcon');
+    const blowBtnText = document.getElementById('blowBtnText');
+    const cakeStatusTip = document.getElementById('cakeStatusTip');
+    let candlesBlown = false;
+
+    function triggerCelebrationConfetti() {
+      if (typeof confetti === 'function') {
+        // Multi-stage fireworks confetti
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#ff2a85', '#ffd700', '#ff85a1', '#a855f7', '#ffffff']
+        });
+
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#ff2a85', '#ffd700']
+          });
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#ff85a1', '#ffffff']
+          });
+        }, 250);
+      }
+    }
+
+    function blowOutCandles() {
+      if (!candlesBlown) {
+        candlesBlown = true;
+        cakeFlames.style.display = 'none';
+        blowBtnIcon.textContent = '✨';
+        blowBtnText.textContent = 'أمنية محققة يا رب! 🎉';
+        cakeStatusTip.textContent = 'انطفأت الشموع وبدأت سنة جديدة مليئة بالنور والجمال لسارة! 💖';
+
+        synth.playCheerTune();
+        triggerCelebrationConfetti();
+      } else {
+        // Re-light candles
+        candlesBlown = false;
+        cakeFlames.style.display = 'block';
+        blowBtnIcon.textContent = '💨';
+        blowBtnText.textContent = 'اطفئي الشموع وتمني أمنية!';
+        cakeStatusTip.textContent = 'تم إشعال الشموع مجدداً.. تمني أمنية أخرى! 🕯️';
+      }
+    }
+
+    cakeContainer.addEventListener('click', blowOutCandles);
+    blowCandlesBtn.addEventListener('click', blowOutCandles);
+
+    const openGiftBtn = document.getElementById('openGiftBtn');
+    const giftModal = document.getElementById('giftModal');
+    const modalCard = document.getElementById('modalCard');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalBottomBtn = document.getElementById('closeModalBottomBtn');
+    const celebrateMoreBtn = document.getElementById('celebrateMoreBtn');
+
+    function openModal() {
+      giftModal.classList.remove('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-90');
+      modalCard.classList.add('scale-100');
+      triggerCelebrationConfetti();
+    }
+
+    function closeModal() {
+      giftModal.classList.add('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-100');
+      modalCard.classList.add('scale-90');
+    }
+
+    openGiftBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    closeModalBottomBtn.addEventListener('click', closeModal);
+    giftModal.addEventListener('click', (e) => {
+      if (e.target === giftModal) closeModal();
+    });
+
+    celebrateMoreBtn.addEventListener('click', () => {
+      triggerCelebrationConfetti();
+      synth.playCheerTune();
+    });
+
+    const heartSymbols = ['💖', '💕', '✨', '🌸', '🎂', '🥳'];
+    function spawnClickHeart(x, y) {
+      const el = document.createElement('div');
+      el.className = 'click-heart';
+      el.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1200);
+    }
+
+    window.addEventListener('click', (e) => {
+      // Don't spawn multiple hearts when clicking close buttons or interactive toggles
+      if (e.target.closest('button') || e.target.closest('#cakeContainer')) {
+        return;
+      }
+      spawnClickHeart(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        const touch = e.touches[0];
+        if (!e.target.closest('button') && !e.target.closest('#cakeContainer')) {
+          spawnClickHeart(touch.clientX, touch.clientY);
+        }
+      }
+    }, { passive: true });
+  </script>
+</body>
+</html>
